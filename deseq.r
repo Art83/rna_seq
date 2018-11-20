@@ -66,6 +66,3 @@ dev.off()
 
 write.table(rownames(sig[1:50,]), "50_most_expressed.txt", quote = F, row.names = F, col.names = F)
 
-res
-
-res[res$padj<0.01,]
