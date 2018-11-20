@@ -1,0 +1,83 @@
+# Rna-seq project
+# working folder is rna_seq, original files are in folder 'original'
+
+
+
+# Indexing the reference genome with HISAT2
+hisat2-build GCF_000146045.2_R64_genomic.fna indexed_ref
+
+# output is big 
+
+# Aligning single-end reads
+hisat2 -p 4 -x ~/rna_seq/original/indexed_ref -U SRR941816.fastq | samtools view -S -b - | samtools sort - zero_min_1_repl.bam
+
+[bam_header_read] EOF marker is absent. The input is probably truncated.
+[samopen] SAM header is present: 17 sequences.
+9043877 reads; of these:
+  9043877 (100.00%) were unpaired; of these:
+    520137 (5.75%) aligned 0 times
+    7929703 (87.68%) aligned exactly 1 time
+    594037 (6.57%) aligned >1 times
+94.25% overall alignment rate
+[bam_sort_core] merging from 4 files...
+
+hisat2 -p 4 -x ~/rna_seq/original/indexed_ref -U SRR941817.fastq | samtools view -S -b - | samtools sort - zero_min_2_repl.bam
+[bam_header_read] EOF marker is absent. The input is probably truncated.
+[samopen] SAM header is present: 17 sequences.
+9929568 reads; of these:
+  9929568 (100.00%) were unpaired; of these:
+    511726 (5.15%) aligned 0 times
+    8644591 (87.06%) aligned exactly 1 time
+    773251 (7.79%) aligned >1 times
+94.85% overall alignment rate
+[bam_sort_core] merging from 5 files...
+
+hisat2 -p 4 -x ~/rna_seq/original/indexed_ref -U SRR941818.fastq | samtools view -S -b - | samtools sort - half_hour_1_repl.bam
+[bam_header_read] EOF marker is absent. The input is probably truncated.
+[samopen] SAM header is present: 17 sequences.
+1721675 reads; of these:
+  1721675 (100.00%) were unpaired; of these:
+    66368 (3.85%) aligned 0 times
+    1507910 (87.58%) aligned exactly 1 time
+    147397 (8.56%) aligned >1 times
+96.15% overall alignment rate
+
+
+hisat2 -p 4 -x ~/rna_seq/original/indexed_ref -U SRR941819.fastq | samtools view -S -b - | samtools sort - half_hour_2_repl.bam
+[bam_header_read] EOF marker is absent. The input is probably truncated.
+[samopen] SAM header is present: 17 sequences.
+6172452 reads; of these:
+  6172452 (100.00%) were unpaired; of these:
+    234529 (3.80%) aligned 0 times
+    5367723 (86.96%) aligned exactly 1 time
+    570200 (9.24%) aligned >1 times
+96.20% overall alignment rate
+[bam_sort_core] merging from 3 files...
+
+
+# Converting gff to gtf
+gffread GCF_000146045.2_R64_genomic.gff -T -o outputGTF
+
+#Applying feature count
+featureCounts -g gene_name -a outputGTF -o fc_output zero_min_1_repl.bam.bam zero_min_2_repl.bam.bam half_hour_1_repl.bam.bam half_hour_2_repl.bam.bam 
+
+# getting rid of redundant columns
+cat fc_output | cut -f 1,7-10 > simple_counts.txt
+
+# Fixing abberant entry
+sed -i "s/'/_1/" simple_counts.txt
+
+
+# Preparing the R script for further work with counts
+# script is called deseq.r and uploaded to github
+
+# Applying R script 
+
+Rscript deseq.r 
+
+# As a result there is a txt file with 50 most expressed genes along jpeg pictures of PCA plot, volcano plot and heatmap
+
+_______________________________________________________________________________________________________________________________________________________________________________
+
+
+
