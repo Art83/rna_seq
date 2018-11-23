@@ -15,7 +15,7 @@ ds <- DESeqDataSetFromMatrix(countData=counts, colData=samples, design=~timepoin
 colnames(ds) <- colnames(counts)
 
 ds <- DESeq(ds)
-res <- results(ds, c("timepoint","half_hour","zero_min"))
+res <- results(ds, c("timepoint","zero_min", "half_hour"))
 
 # getting rid of genes without p-values
 sum( is.na(res$pvalue) )
