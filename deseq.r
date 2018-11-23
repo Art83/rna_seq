@@ -13,8 +13,9 @@ samples <- data.frame(timepoint = c(rep("zero_min",2), rep("half_hour",2)))
 # Deseq
 ds <- DESeqDataSetFromMatrix(countData=counts, colData=samples, design=~timepoint)
 colnames(ds) <- colnames(counts)
+
 ds <- DESeq(ds)
-res <- results(ds, c("timepoint","zero_min","half_hour"))
+res <- results(ds, c("timepoint","half_hour","zero_min"))
 
 # getting rid of genes without p-values
 sum( is.na(res$pvalue) )
@@ -23,6 +24,11 @@ sig <- res[ which(res$padj < 0.01), ]
 sig <- sig[ order(sig$padj), ]
 sig <- as.data.frame(sig)
 # 6039 genes, 2654 pval< 0.01
+upregulated <- sig[sig$log2FoldChange > 0,]
+downregulated <- sig[sig$log2FoldChange < 0,]
+
+#1284 downregulated genes vs 1370 upregulated genes
+
 
 ## Apply regularized-log transform to counts
 rld <- rlogTransformation(ds)
@@ -65,4 +71,5 @@ abline(h=-log10(max(res$pvalue[res$padj<0.01], na.rm=TRUE)), col="black", lty=4,
 dev.off()
 
 write.table(rownames(sig[1:50,]), "50_most_expressed.txt", quote = F, row.names = F, col.names = F)
-
+write.table(rownames(upregulated[1:50,]), "50_most_expressed_upregulated.txt", quote = F, row.names = F, col.names = F)
+write.table(rownames(downregulated[1:50,]), "50_most_expressed_downregulated.txt", quote = F, row.names = F, col.names = F)
